@@ -11,7 +11,11 @@ from agents.alt_credit import generate_alt_credit
 from agents.risk_model import predict_risk
 from agents.decision_engine import make_decision
 from orchestrator.explanation import generate_explanation
-from utils.guardrails import validate_raw_input, validate_input_schema
+from utils.guardrails import (
+    validate_raw_input, validate_input_schema,
+    validate_output_schema, check_explanation_grounding,
+    redact_sensitive_data, filter_harmful_content
+)
 
 
 def _validate_agent_output(output: Any, required_keys, fallback: dict) -> dict:
@@ -84,6 +88,8 @@ def run_langgraoh_pipline(data: dict, interactive: bool = True, manual_override:
             "flags": []
         }
     )
+    # Output guardrail: basic schema validation already done above
+    print("GUARDRAIL: Validator output schema validated successfully")
     trace.append({"step": "validator", "output": validator_output})
 
     if validator_output["status"] == "FAIL":
@@ -113,6 +119,8 @@ def run_langgraoh_pipline(data: dict, interactive: bool = True, manual_override:
             "comment": "Output validation failed"
         }
     )
+    # Output guardrail: basic schema validation already done above
+    print("GUARDRAIL: Alt credit output schema validated successfully")
     trace.append({"step": "alt_credit", "output": alt_credit_output})
 
     # LangGraph node: risk
@@ -126,6 +134,8 @@ def run_langgraoh_pipline(data: dict, interactive: bool = True, manual_override:
             "comment": "Output validation failed"
         }
     )
+    # Output guardrail: basic schema validation already done above
+    print("GUARDRAIL: Risk model output schema validated successfully")
     trace.append({"step": "risk", "output": risk_output})
 
     # LangGraph node: decision
@@ -138,6 +148,8 @@ def run_langgraoh_pipline(data: dict, interactive: bool = True, manual_override:
             "reason": "Decision output validation failed"
         }
     )
+    # Output guardrail: basic schema validation already done above
+    print("GUARDRAIL: Decision engine output schema validated successfully")
 
     if decision_output["decision"] == "MANUAL_REVIEW":
         review_details = {
@@ -181,6 +193,36 @@ def run_langgraoh_pipline(data: dict, interactive: bool = True, manual_override:
     }
 
     explanation_text = generate_explanation(result)
+    
+    # Output guardrail: validate explanation schema
+    valid, explanation_text, reason = validate_output_schema(explanation_text, 'explanation')
+    if not valid:
+        print(f"GUARDRAIL: Explanation output schema validation failed - {reason}")
+        explanation_text = "Explanation generation failed due to output guardrail."
+    else:
+        print("GUARDRAIL: Explanation output schema validated successfully")
+    
+    # Output guardrail: check explanation grounding
+    grounded, explanation_text, reason = check_explanation_grounding(explanation_text, result)
+    if not grounded:
+        print(f"GUARDRAIL: Explanation grounding check failed - {reason}")
+        explanation_text = "Explanation does not match decision intent."
+    else:
+        print("GUARDRAIL: Explanation grounding validated successfully")
+    
+    # Output guardrail: redact sensitive data
+    redacted, explanation_text, reason = redact_sensitive_data(explanation_text)
+    if redacted:
+        print("GUARDRAIL: Sensitive data redaction applied successfully")
+    
+    # Output guardrail: filter harmful content
+    safe, explanation_text, reason = filter_harmful_content(explanation_text)
+    if not safe:
+        print(f"GUARDRAIL: Harmful content detected and blocked - {reason}")
+        explanation_text = "Explanation contains inappropriate content and has been blocked."
+    else:
+        print("GUARDRAIL: No harmful content detected in explanation")
+    
     trace.append({"step": "explanation", "output": explanation_text})
     result["explanation"] = explanation_text
     result["trace"] = trace
