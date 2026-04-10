@@ -108,8 +108,8 @@
             "comment": "simple probability from model"
         },
         "decision": {
-            "decision": "APPROVE",
-            "reason": "Approved after manual review",
+            "decision": "REJECT",
+            "reason": "Rejected after manual review",
             "manual_review_details": {
                 "risk_probability": 0.0954096643653338,
                 "alt_credit_score": 0.36,
@@ -118,7 +118,7 @@
                 "decision_reason": "Moderate risk, requires manual review"
             }
         },
-        "explanation": "Approve: credit is low risk based on score model and alternative credit check.",
+        "explanation": "Reject: high risk or validation issue detected.",
         "trace": [
             {
                 "step": "validator",
@@ -148,8 +148,8 @@
             {
                 "step": "decision",
                 "output": {
-                    "decision": "APPROVE",
-                    "reason": "Approved after manual review",
+                    "decision": "REJECT",
+                    "reason": "Rejected after manual review",
                     "manual_review_details": {
                         "risk_probability": 0.0954096643653338,
                         "alt_credit_score": 0.36,
@@ -161,7 +161,7 @@
             },
             {
                 "step": "explanation",
-                "output": "Approve: credit is low risk based on score model and alternative credit check."
+                "output": "Reject: high risk or validation issue detected."
             }
         ]
     },

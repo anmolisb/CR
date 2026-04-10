@@ -222,7 +222,7 @@ def run_langgraoh_pipline(data: dict, interactive: bool = True, manual_override:
         explanation_text = "Explanation contains inappropriate content and has been blocked."
     else:
         print("GUARDRAIL: No harmful content detected in explanation")
-    
+  
     trace.append({"step": "explanation", "output": explanation_text})
     result["explanation"] = explanation_text
     result["trace"] = trace
