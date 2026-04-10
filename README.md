@@ -49,8 +49,7 @@ deliverables/
 ├── scenario_test_results.json
 ├── scenario_test_results_table.md
 └── run_full_system_output.json
-docs/
-└── final_design_document.md
+
 ```
 
 ## Setup & Installation
