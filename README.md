@@ -1,4 +1,4 @@
-# Credit Risk Assessment — Multi-Agent System
+# Credit Risk Assessment: Multi-Agent System
 
 ## Overview
 This system automates credit risk assessment using a multi-agent LangGraph-style pipeline that validates loan applications, predicts default risk, and generates explainable decision outcomes. It is designed for credit underwriting in financial services, with explicit guardrails and a full-system runner for end-to-end execution.
